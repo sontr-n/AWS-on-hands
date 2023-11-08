@@ -5,7 +5,7 @@
 - Lambda (serverless)
 - S3
 - DyamoDB
-- AWS SDK (IaC)
+- AWS CDK (IaC)
 - EC2
 - VPC
 - API Gateway
