@@ -1,0 +1,21 @@
+service: lambda-aws
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, self:custom.defaultStage}
+  profile: ${self:custom.profiles.${self:provider.stage}}
+  region: ap-southeast-1
+
+plugins:
+  - serverless-layers
+  - serverless-python-requirements
+
+custom:
+  defaultStage: dev
+  profiles:
+    dev: SontlAWS
+
+functions:
