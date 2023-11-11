@@ -1,0 +1,5 @@
+iamRoleStatement:
+  Effect: Allow
+  Action:
+    - dynamodb:*
+  Resource: "*"  

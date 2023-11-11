@@ -8,14 +8,56 @@ provider:
   stage: ${opt:stage, self:custom.defaultStage}
   profile: ${self:custom.profiles.${self:provider.stage}}
   region: ap-southeast-1
+  environment:
+    SONGS_TABLE: ${self:service}.SongsTable
+  iamRoleStatements:
+    - ${file(./config/provider/iamRoleStatements/dynamodb.yml):iamRoleStatement}
 
-plugins:
-  - serverless-layers
-  - serverless-python-requirements
+package:
+  individually: true
+  exclude:
+    - "**"
+  include:
+    - "functions/**"
 
 custom:
   defaultStage: dev
   profiles:
     dev: SontlAWS
 
+
 functions:
+  listSongs:
+    handler: functions/src/songs.list_songs
+    layers:
+      - ${cf:${file(../lambda-layers/serverless.yml):service}-${self:provider.stage}.DbConnectionLayerExport}
+      - ${cf:${file(../lambda-lib-layer/serverless.yml):service}-${self:provider.stage}.PythonDependenciesLayerExport}
+  addSong:
+    handler: functions/src/songs.add_song
+    layers:
+      - ${cf:${file(../lambda-layers/serverless.yml):service}-${self:provider.stage}.DbConnectionLayerExport}
+      - ${cf:${file(../lambda-lib-layer/serverless.yml):service}-${self:provider.stage}.PythonDependenciesLayerExport}
+
+
+#Resources definition
+resources:
+  Resources:
+    SongsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: SongsTable
+        AttributeDefinitions:
+          - AttributeName: song_name
+            AttributeType: S
+          - AttributeName: author
+            AttributeType: S
+        KeySchema:
+          - AttributeName: author
+            KeyType: HASH
+          - AttributeName: song_name
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        
+            
