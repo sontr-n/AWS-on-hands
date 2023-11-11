@@ -1,0 +1,34 @@
+service: bff-apigateway
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, self:custom.defaultStage}
+  profile: ${self:custom.profiles.${self:provider.stage}}
+  region: ap-southeast-1
+  iamRoleStatements:
+    - ${file(./config/provider/iamRoleStatements/lambda.yml):iamRoleStatement}
+
+package:
+  individually: true
+  exclude:
+    - "**"
+  include:
+    - "src/**"
+
+custom:
+  defaultStage: dev
+  profiles:
+    dev: SontlAWS
+
+functions:
+  listSongs:
+    handler: src/python/songs.list_songs
+    layers:
+      - ${cf:${file(../lambda-layers/serverless.yml):service}-${self:provider.stage}.DbConnectionLayerExport}
+      - ${cf:${file(../lambda-lib-layer/serverless.yml):service}-${self:provider.stage}.PythonDependenciesLayerExport}
+    events:
+      - http:
+          path: song
+          method: get
+          cors: true
