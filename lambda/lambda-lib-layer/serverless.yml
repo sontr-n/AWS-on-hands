@@ -1,0 +1,28 @@
+service: lambda-lib-layer
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, self:custom.defaultStage}
+  profile: ${self:custom.profiles.${self:provider.stage}}
+  region: ap-southeast-1
+
+custom:
+  defaultStage: dev
+  profiles:
+    dev: SontlAWS
+
+layers:
+  pythonDependencies:
+    path: src
+    compatibleRuntimes:
+      - python3.9
+
+resources:
+  Outputs:
+    PythonDependenciesLayerExport:
+      Value:
+        Ref: PythonDependenciesLambdaLayer
+      Export:
+        Name: PythonDependenciesLambdaLayer
