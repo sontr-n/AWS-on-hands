@@ -1,0 +1,36 @@
+service: db-connection-layer
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, self:custom.defaultStage}
+  profile: ${self:custom.profiles.${self:provider.stage}}
+  region: ap-southeast-1
+
+package:
+  individually: true
+  exclude:
+    - "node_modules/**"
+    - ".git/**"
+
+custom:
+  defaultStage: dev
+  profiles:
+    dev: SontlAWS
+
+# Layers definition
+layers:
+  dbConnection:
+    path: ./src
+    compatibleRuntimes:
+      - python3.9
+    retain: false
+
+resources:
+  Outputs:
+    DbConnectionLayerExport:
+      Value:
+        Ref: DbConnectionLambdaLayer
+      Export:
+        Name: DbConnectionLayerLambdaLayer
